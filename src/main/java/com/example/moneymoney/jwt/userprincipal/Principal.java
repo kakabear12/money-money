@@ -10,15 +10,14 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Principal implements UserDetails {
+public class Principal implements UserDetails , OAuth2User {
 
     private Long id;
 
@@ -34,7 +33,7 @@ public class Principal implements UserDetails {
     private Role role;
     @JsonIgnore
     private Collection<? extends GrantedAuthority> grantedAuthorities;
-
+    private Map<String, Object> attributes;
     public static Principal build(User user) {
         List<GrantedAuthority> grantedAuthorities = Arrays.asList(new SimpleGrantedAuthority(user.getRole().name()));
            return Principal.builder()
@@ -47,6 +46,32 @@ public class Principal implements UserDetails {
                 .grantedAuthorities(grantedAuthorities)
                    .build();
     }
+    public static Principal create(User user, Map<String, Object> attributes) {
+        Principal userPrincipal = Principal.build(user);
+        userPrincipal.setAttributes(attributes);
+        return userPrincipal;
+    }
+    public Principal(Long id, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.grantedAuthorities = authorities;
+    }
+
+    public static Principal create(User user) {
+        List<GrantedAuthority> authorities = Collections.
+                singletonList(new SimpleGrantedAuthority("USER"));
+
+        return new Principal(
+                user.getId(),
+                user.getEmail(),
+                user.getPassword(),
+                authorities
+        );
+    }
+
+
+
     public Long getId() {
         return id;
     }
@@ -109,4 +134,18 @@ public class Principal implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, Object> attributes) {
+        this.attributes = attributes;
+    }
+
+    @Override
+    public String getName() {
+        return String.valueOf(id);
+    }
+
 }
