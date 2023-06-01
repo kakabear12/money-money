@@ -51,11 +51,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if(userOptional.isPresent()) {
             user = userOptional.get();
             if(!user.getProvider().equals(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))) {
-                throw new OAuth2AuthenticationProcessingException("Looks like you're signed up with " +
-                        user.getProvider() + " account. Please use your " + user.getProvider() +
-                        " account to login.");
+                updateProviderUser(user, oAuth2UserInfo, oAuth2UserRequest);
+            }else {
+                user = updateUser(user, oAuth2UserInfo);
             }
-            user = updateExistingUser(user, oAuth2UserInfo);
         } else {
             user = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
         }
@@ -70,15 +69,47 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .firstName(oAuth2UserInfo.getName())
                 .providerId(oAuth2UserInfo.getId())
                 .email(oAuth2UserInfo.getEmail())
+                .enable(true)
                 .role(Role.USER)
                 .build();
         return userRepository.save(user);
     }
 
-    private User updateExistingUser(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
+    private User updateExistingUserWithGG(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
         existingUser.setLastName(oAuth2UserInfo.getName());
         existingUser.setFirstName(oAuth2UserInfo.getName());
         return userRepository.save(existingUser);
     }
+    private User updateExistingUserWithFB(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
+        int name = oAuth2UserInfo.getName().lastIndexOf(" ");
+        String lastName = null;
+        String firstName = null;
+        if (name != -1) {
+            lastName = oAuth2UserInfo.getName().substring(name + 1);
+            firstName = oAuth2UserInfo.getName().substring(0, name);
+        }else {
+            lastName = "";
+            firstName = "";
+        }
+        existingUser.setLastName(lastName);
+        existingUser.setFirstName(firstName);
+        return userRepository.save(existingUser);
+    }
+    private User updateUser(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
+        if (existingUser.getProvider().equals(AuthProvider.facebook)){
+            updateExistingUserWithFB(existingUser, oAuth2UserInfo);
+        }else if(existingUser.getProvider().equals(AuthProvider.google)) {
+            updateExistingUserWithGG(existingUser, oAuth2UserInfo);
+        }
+        return userRepository.save(existingUser);
+    }
+
+    private User updateProviderUser(User existingUser, OAuth2UserInfo oAuth2UserInfo, OAuth2UserRequest oAuth2UserRequest) {
+        existingUser.setProvider(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()));
+        existingUser.setProviderId(oAuth2UserInfo.getId());
+        updateUser(existingUser, oAuth2UserInfo);
+        return userRepository.save(existingUser);
+    }
+
 
 }

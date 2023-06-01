@@ -6,7 +6,6 @@ public class FacebookOAuth2UserInfo extends OAuth2UserInfo {
     public FacebookOAuth2UserInfo(Map<String, Object> attributes) {
         super(attributes);
     }
-
     @Override
     public String getId() {
         return (String) attributes.get("id");

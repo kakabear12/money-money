@@ -3,6 +3,7 @@ package com.example.moneymoney.oauth2;
 import com.example.moneymoney.config.AppProperties;
 import com.example.moneymoney.exception.BadRequestException;
 import com.example.moneymoney.jwt.JwtProvider;
+import com.example.moneymoney.jwt.RefreshTokenProvider;
 import com.example.moneymoney.jwt.userprincipal.Principal;
 import com.example.moneymoney.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.example.moneymoney.utils.CookieUtils;
@@ -25,9 +26,12 @@ import static com.example.moneymoney.repository.HttpCookieOAuth2AuthorizationReq
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
+    @Autowired
     private JwtProvider tokenProvider;
 
     private AppProperties appProperties;
+    @Autowired
+    private RefreshTokenProvider refreshTokenProvider;
 
     private HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
@@ -63,10 +67,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
-        String token = tokenProvider.createToken((Principal) authentication.getPrincipal());
+        String accessToken = tokenProvider.createToken((Principal) authentication.getPrincipal());
+        String email = tokenProvider.getUsernameFromToken(accessToken);
+        String refreshToken = refreshTokenProvider.createRefreshToken(email).getToken();
+
 
         return UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("token", token)
+                .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
     }
 

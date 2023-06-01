@@ -48,7 +48,7 @@ public class WebSecurityConfig {
             "/**/*.html",
             "/**/*.css",
             "/**/*.js",
-            "/oauth2/**"
+            "/oauth2/**",
 
 
     };
@@ -115,6 +115,8 @@ public class WebSecurityConfig {
                 .cors()
                 .and()
                 .csrf()
+                .disable()
+                .formLogin()
                 .disable()
                 .authorizeHttpRequests()
                 .requestMatchers(UNAUTHORIZED_LIST_URLS).permitAll()
