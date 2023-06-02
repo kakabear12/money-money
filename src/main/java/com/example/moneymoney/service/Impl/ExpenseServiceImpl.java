@@ -6,44 +6,46 @@ import com.example.moneymoney.model.responsemodel.ExpenseResponse;
 import com.example.moneymoney.repository.AssetRepository;
 import com.example.moneymoney.repository.ExpenseCategoryRepository;
 import com.example.moneymoney.repository.ExpenseRepository;
+import com.example.moneymoney.service.AssetService;
+import com.example.moneymoney.service.ExpenseCategoryService;
 import com.example.moneymoney.service.ExpenseService;
 import lombok.RequiredArgsConstructor;
 
-import org.modelmapper.Conditions;
-import org.modelmapper.ModelMapper;
+
 import org.springframework.stereotype.Service;
 
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ExpenseServiceImpl implements ExpenseService {
     private final ExpenseRepository expenseRepository;
-    private final ExpenseCategoryRepository expenseCategoryRepository;
-    private final AssetRepository assetRepository;
 
+    private  final ExpenseCategoryService expenseCategoryService;
+
+    private final AssetService assetService;
 
     @Override
     public ExpenseResponse createExpense(ExpenseRequestModel expenseRequest, User loggedInUser) {
-        String expenseCategoryName = expenseRequest.getExpenseCategoryName();
-        String assetName = expenseRequest.getAssetName();
+        List<ExpenseCategory> expenseCategories =  expenseCategoryService.getAllExpenseCategories();
+        List<Asset> assets = assetService.getAllAssets();
 
-        ExpenseCategory expenseCategory = expenseCategoryRepository.findByExpenseCategoryName(expenseCategoryName);
-        if (expenseCategory == null) {
-            throw new IllegalArgumentException("Expense category not found");
+        if (expenseCategories.isEmpty()) {
+            throw new IllegalArgumentException("Expense categories cannot be empty");
         }
 
-        Asset asset = assetRepository.findByAssetName(assetName);
-        if (asset == null) {
-            throw new IllegalArgumentException("Asset not found");
+        if (assets.isEmpty()) {
+            throw new IllegalArgumentException("Assets cannot be empty");
         }
+
+        // Lấy Expense Category đầu tiên từ danh sách Expense Categories
+        ExpenseCategory expenseCategory = expenseCategories.get(0);
+
+        // Lấy Asset đầu tiên từ danh sách Assets
+        Asset asset = assets.get(0);
 
         Expense expense = new Expense();
         expense.setUser(loggedInUser);
@@ -66,8 +68,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public ExpenseResponse getExpenseById(Long expenseId) {
-        Expense expense = expenseRepository.findById(expenseId)
+    public ExpenseResponse getExpenseById(Long expenseId , User loggedInUser) {
+        Expense expense = expenseRepository.findByIdAndUser(expenseId, loggedInUser)
                 .orElseThrow(() -> new RuntimeException("Expense not found"));
 
         ExpenseResponse expenseResponse = new ExpenseResponse();
@@ -85,8 +87,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public void deleteExpense(Long expenseId) {
-        Expense expense = expenseRepository.findById(expenseId)
+    public void deleteExpense(Long expenseId, User loggedInUser) {
+        Expense expense = expenseRepository.findByIdAndUser(expenseId, loggedInUser)
                 .orElseThrow(() -> new RuntimeException("Expense not found"));
 
         expenseRepository.delete(expense);
@@ -94,26 +96,42 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 
     @Override
-    public ExpenseResponse updateExpense(Long expenseId, ExpenseRequestModel expenseRequest) {
+    public ExpenseResponse updateExpense(Long expenseId, ExpenseRequestModel expenseRequest, User loggedInUser) {
         Expense existingExpense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new RuntimeException("Expense not found"));
 
-        ExpenseCategory expenseCategory = expenseCategoryRepository.findByExpenseCategoryName(expenseRequest.getExpenseCategoryName());
-        if (expenseCategory == null) {
-            throw new IllegalArgumentException("Expense category not found");
+
+        List<ExpenseCategory> expenseCategories =  expenseCategoryService.getAllExpenseCategories();
+        List<Asset> assets = assetService.getAllAssets();
+
+        if (expenseCategories.isEmpty()) {
+            throw new IllegalArgumentException("Expense categories cannot be empty");
         }
+
+        if (assets.isEmpty()) {
+            throw new IllegalArgumentException("Assets cannot be empty");
+        }
+
+
+
+        // Lấy Expense Category đầu tiên từ danh sách Expense Categories
+        ExpenseCategory expenseCategory = expenseCategories.get(0);
+
+        // Lấy Asset đầu tiên từ danh sách Assets
+        Asset asset = assets.get(0);
 
         existingExpense.setExpenseCategory(expenseCategory);
         existingExpense.setDate(expenseRequest.getDate());
         existingExpense.setAmount(expenseRequest.getAmount());
         existingExpense.setDescription(expenseRequest.getDescription());
 
-        Asset asset = existingExpense.getAsset();
-        if (asset == null) {
-            asset = new Asset();
-            existingExpense.setAsset(asset);
+        if (existingExpense.getAsset() == null) {
+            Asset newAsset = new Asset();
+            newAsset.setAssetName(asset.getAssetName());
+            existingExpense.setAsset(newAsset);
+        } else {
+            existingExpense.getAsset().setAssetName(asset.getAssetName());
         }
-        asset.setAssetName(expenseRequest.getAssetName());
 
         Expense updatedExpense = expenseRepository.save(existingExpense);
 
@@ -129,8 +147,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 
     @Override
-    public List<Expense> getListExpense() {
-        return expenseRepository.findAll();
+    public List<Expense> getListExpense(User loggedInUser) {
+        return expenseRepository.findAllByUser(loggedInUser);
     }
 
 
@@ -153,4 +171,31 @@ public class ExpenseServiceImpl implements ExpenseService {
     public BigDecimal getTotalAmountByYear(int year, User loggedInUser) {
         return expenseRepository.getTotalAmountByYear(year,loggedInUser);
     }
+
+    @Override
+    public BigDecimal getTotalAmountByDays(User loggedInUser) {
+        Date currentDate = new Date();
+        return expenseRepository.getTotalAmountByDay(currentDate, loggedInUser);
+    }
+
+    @Override
+    public BigDecimal getTotalAmountByWeeks(User loggedInUser) {
+        Date currentDate = new Date();
+        return expenseRepository.getTotalAmountByWeek(currentDate, loggedInUser);
+    }
+
+    @Override
+    public BigDecimal getTotalAmountByMonths(User loggedInUser) {
+        Date currentDate = new Date();
+        return expenseRepository.getTotalAmountByMonth(currentDate, loggedInUser);
+    }
+
+    @Override
+    public BigDecimal getTotalAmountByYears(User loggedInUser) {
+        Calendar calendar = Calendar.getInstance();
+        int currentYear = calendar.get(Calendar.YEAR);
+        return expenseRepository.getTotalAmountByYear(currentYear, loggedInUser);
+    }
+
+
 }

@@ -15,12 +15,12 @@ import java.util.List;
 public interface IncomeService {
 
     IncomeResponse createIncome(IncomeRequestModel incomeRequest, User loggedInUser);
-    IncomeResponse getIncomeById(Long incomeId);
-    IncomeResponse updateIncome(Long incomeId, IncomeRequestModel incomeRequest);
+    IncomeResponse getIncomeById(Long incomeId,  User loggedInUser);
+    IncomeResponse updateIncome(Long incomeId, IncomeRequestModel incomeRequest,  User loggedInUser);
 
-    void deleteIncome(Long incomeId);
+    void deleteIncome(Long incomeId, User loggedInUser);
 
-    List<Income> getListIncome();
+    List<Income> getListIncome(User loggedInUser);
 
 
     BigDecimal getTotalAmountByDay(Date date, User loggedInUser);
@@ -30,4 +30,11 @@ public interface IncomeService {
     BigDecimal getTotalAmountByMonth(Date date, User loggedInUser);
 
     BigDecimal getTotalAmountByYear(int year, User loggedInUser);
+
+
+
+    BigDecimal getTotalAmountByDays(User loggedInUser);
+    BigDecimal getTotalAmountByWeeks(User loggedInUser);
+    BigDecimal getTotalAmountByMonths(User loggedInUser);
+    BigDecimal getTotalAmountByYears(User loggedInUser);
 }

@@ -41,16 +41,16 @@ public class WebSecurityConfig {
 
 
 
-            "/",
-            "/error",
-            "/favicon.ico",
-            "/**/*.png",
-            "/**/*.gif",
-            "/**/*.svg",
-            "/**/*.jpg",
-            "/**/*.html",
-            "/**/*.css",
-            "/**/*.js",
+//            "/",
+//            "/error",
+//            "/favicon.ico",
+//            "/**/*.png",
+//            "/**/*.gif",
+//            "/**/*.svg",
+//            "/**/*.jpg",
+//            "/**/*.html",
+//            "/**/*.css",
+//            "/**/*.js",
             "/oauth2/**",
 
 

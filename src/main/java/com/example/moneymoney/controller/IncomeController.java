@@ -6,6 +6,7 @@ import com.example.moneymoney.model.responsemodel.ExpenseResponse;
 import com.example.moneymoney.model.responsemodel.IncomeResponse;
 import com.example.moneymoney.service.IncomeService;
 import com.example.moneymoney.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ public class IncomeController {
 
 
     @PostMapping
+    @Operation(summary = "For Creating new Income ")
     public ResponseEntity<IncomeResponse> createIncome(@RequestBody IncomeRequestModel incomeRequest, Principal principal) {
         String username = principal.getName();
         User loggedInUser = userService.findUserByEmail(username);
@@ -39,27 +42,40 @@ public class IncomeController {
     }
 
     @GetMapping("/{incomeId}")
-    public ResponseEntity<IncomeResponse> getIncomeById(@PathVariable Long incomeId) {
-        IncomeResponse incomeResponse = incomeService.getIncomeById(incomeId);
+    @Operation(summary = "For getting Income by Id  ")
+    public ResponseEntity<IncomeResponse> getIncomeById(@PathVariable Long incomeId, Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        IncomeResponse incomeResponse = incomeService.getIncomeById(incomeId, loggedInUser);
         return ResponseEntity.ok(incomeResponse);
     }
 
     @PutMapping("/{incomeId}")
-    public ResponseEntity<IncomeResponse> updateIncome(@PathVariable Long incomeId, @RequestBody IncomeRequestModel incomeRequest) {
-        IncomeResponse updatedIncome = incomeService.updateIncome(incomeId, incomeRequest);
+    @Operation(summary = "For Updating Income ")
+    public ResponseEntity<IncomeResponse> updateIncome(@PathVariable Long incomeId, @RequestBody IncomeRequestModel incomeRequest, Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        IncomeResponse updatedIncome = incomeService.updateIncome(incomeId, incomeRequest,loggedInUser);
         return ResponseEntity.ok(updatedIncome);
     }
 
     @DeleteMapping("/{incomeId}")
-    public ResponseEntity<Void> deleteIncome(@PathVariable Long incomeId) {
-        incomeService.deleteIncome(incomeId);
+    @Operation(summary = "For Deleting Income ")
+    public ResponseEntity<Void> deleteIncome(@PathVariable Long incomeId, Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        incomeService.deleteIncome(incomeId, loggedInUser);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<IncomeResponse>> getListIncome() {
-        List<Income> incomes = incomeService.getListIncome();
+    @Operation(summary = "For getting list of income ")
+    public ResponseEntity<List<IncomeResponse>> getListIncome(Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        List<Income> incomes = incomeService.getListIncome(loggedInUser);
         List<IncomeResponse> expenseResponses = incomes.stream()
+                .sorted(Comparator.comparing(Income::getDate).reversed())
                 .map(this::mapToIncomeResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(expenseResponses);
@@ -77,6 +93,7 @@ public class IncomeController {
     }
 
     @GetMapping("/total-by-day")
+    @Operation(summary = "For getting total income's amount by date - Must input 'year-month-day' ")
     public ResponseEntity<BigDecimal> getTotalAmountByDay(@RequestParam("date") Date date, Principal principal) {
         String username = principal.getName();
         User loggedInUser = userService.findUserByEmail(username);
@@ -85,6 +102,7 @@ public class IncomeController {
     }
 
     @GetMapping("/total-by-week")
+    @Operation(summary = "For getting total income's amount by week - Must input 'year-month-day' ")
     public ResponseEntity<BigDecimal> getTotalAmountByWeek(@RequestParam("date") Date date, Principal principal) {
         String userName = principal.getName();
         User loggedInUser = userService.findUserByEmail(userName);
@@ -93,6 +111,7 @@ public class IncomeController {
     }
 
     @GetMapping("/total-by-month")
+    @Operation(summary = "For getting total income's amount by month - Must input 'year-month-day' ")
     public ResponseEntity<BigDecimal> getTotalAmountByMonth(@RequestParam("date") Date date, Principal principal) {
         String userName = principal.getName();
         User loggedInUser = userService.findUserByEmail(userName);
@@ -101,10 +120,51 @@ public class IncomeController {
     }
 
     @GetMapping("/total-by-year")
+    @Operation(summary = "For getting total income's amount by year - Must input 'year' ")
     public ResponseEntity<BigDecimal> getTotalAmountByYear(@RequestParam("year") int year, Principal principal) {
         String userName = principal.getName();
         User loggedInUser = userService.findUserByEmail(userName);
         BigDecimal totalAmount = incomeService.getTotalAmountByYear(year, loggedInUser);
         return ResponseEntity.ok(totalAmount);
     }
+
+
+    @GetMapping("/total-amount-by-days")
+    @Operation(summary = "For getting total income's amount by day ")
+    public ResponseEntity<BigDecimal> getTotalAmountByDay(Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        BigDecimal totalAmount = incomeService.getTotalAmountByDays(loggedInUser);
+        return ResponseEntity.ok(totalAmount);
+    }
+
+    @GetMapping("/total-amount-by-weeks")
+    @Operation(summary = "For getting total income's amount by week ")
+    public ResponseEntity<BigDecimal> getTotalAmountByWeek(Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        BigDecimal totalAmount = incomeService.getTotalAmountByWeeks(loggedInUser);
+        return ResponseEntity.ok(totalAmount);
+    }
+
+    @GetMapping("/total-amount-by-months")
+    @Operation(summary = "For getting total income's amount by month ")
+    public ResponseEntity<BigDecimal> getTotalAmountByMonth(Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        BigDecimal totalAmount = incomeService.getTotalAmountByMonths(loggedInUser);
+        return ResponseEntity.ok(totalAmount);
+    }
+
+    @GetMapping("/total-amount-by-years")
+    @Operation(summary = "For getting total income's amount by year ")
+    public ResponseEntity<BigDecimal> getTotalAmountByYear(Principal principal) {
+        String username = principal.getName();
+        User loggedInUser = userService.findUserByEmail(username);
+        BigDecimal totalAmount = incomeService.getTotalAmountByYears(loggedInUser);
+        return ResponseEntity.ok(totalAmount);
+    }
+
+
+
 }

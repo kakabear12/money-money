@@ -11,11 +11,16 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
 
+    Optional<Expense> findByIdAndUser(Long expenseId, User user);
+
+    List<Expense> findAllByUser(User user);
 
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE DATE(e.date) = :date AND e.user = :loggedInUser")
     BigDecimal getTotalAmountByDay(@Param("date") Date date, @Param("loggedInUser") User loggedInUser);
@@ -28,5 +33,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE YEAR(e.date) = :year AND e.user = :loggedInUser")
     BigDecimal getTotalAmountByYear(@Param("year") int year, @Param("loggedInUser") User loggedInUser);
+
+
 
 }

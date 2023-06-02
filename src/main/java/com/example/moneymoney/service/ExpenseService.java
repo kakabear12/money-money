@@ -1,9 +1,13 @@
 package com.example.moneymoney.service;
 
+import com.example.moneymoney.entity.Asset;
 import com.example.moneymoney.entity.Expense;
+import com.example.moneymoney.entity.ExpenseCategory;
 import com.example.moneymoney.entity.User;
 import com.example.moneymoney.model.requestmodel.ExpenseRequestModel;
 import com.example.moneymoney.model.responsemodel.ExpenseResponse;
+import com.example.moneymoney.utils.ResponseObject;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,13 +17,13 @@ import java.util.List;
 public interface ExpenseService {
     ExpenseResponse  createExpense(ExpenseRequestModel expenseRequest, User loggedInUser);
 
-    ExpenseResponse getExpenseById(Long expenseId);
+    ExpenseResponse getExpenseById(Long expenseId, User loggedInUser);
 
-    void deleteExpense(Long expenseId);
+    void deleteExpense(Long expenseId, User loggedInUser);
 
-    ExpenseResponse updateExpense(Long expenseId, ExpenseRequestModel expenseRequest);
+    ExpenseResponse updateExpense(Long expenseId, ExpenseRequestModel expenseRequest, User loggedInUser);
 
-    List<Expense> getListExpense();
+    List<Expense> getListExpense(User loggedInUser);
 
     BigDecimal getTotalAmountByDay(Date date, User loggedInUser);
 
@@ -27,5 +31,11 @@ public interface ExpenseService {
     public BigDecimal getTotalAmountByMonth(Date date, User loggedInUser);
 
     public BigDecimal getTotalAmountByYear(int year, User loggedInUser);
+
+
+    BigDecimal getTotalAmountByDays(User loggedInUser);
+    BigDecimal getTotalAmountByWeeks(User loggedInUser);
+    BigDecimal getTotalAmountByMonths(User loggedInUser);
+    BigDecimal getTotalAmountByYears(User loggedInUser);
 
 }

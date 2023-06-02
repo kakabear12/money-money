@@ -1,5 +1,7 @@
 package com.example.moneymoney.model.requestmodel;
 
+import com.example.moneymoney.entity.Asset;
+import com.example.moneymoney.entity.ExpenseCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +11,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

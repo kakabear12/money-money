@@ -9,12 +9,15 @@ import com.example.moneymoney.model.responsemodel.IncomeResponse;
 import com.example.moneymoney.repository.AssetRepository;
 import com.example.moneymoney.repository.IncomeCategoryRepository;
 import com.example.moneymoney.repository.IncomeRepository;
+import com.example.moneymoney.service.AssetService;
+import com.example.moneymoney.service.IncomeCategoryService;
 import com.example.moneymoney.service.IncomeService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -25,26 +28,30 @@ public class IncomeServiceImpl implements IncomeService {
     private final IncomeRepository incomeRepository;
 
     private final IncomeCategoryRepository incomeCategoryRepository;
-    private final AssetRepository assetRepository;
 
-    private final ModelMapper modelMapper;
+    private final AssetService assetService;
 
+    private final IncomeCategoryService incomeCategoryService;
 
 
     @Override
     public IncomeResponse createIncome(IncomeRequestModel incomeRequest, User loggedInUser) {
-        String incomeCategoryName = incomeRequest.getIncomeCategoryName();
-        String assetName = incomeRequest.getAssetName();
+        List<IncomeCategory> incomeCategories = incomeCategoryService.getAllIncomeCategories();
+        List<Asset> assets = assetService.getAllAssets();
 
-        IncomeCategory incomeCategory = incomeCategoryRepository.findByIncomeCategoryName(incomeCategoryName);
-        if (incomeCategory == null) {
-            throw new IllegalArgumentException("Income category not found");
+        if (incomeCategories.isEmpty()) {
+            throw new IllegalArgumentException("Income categories cannot be empty");
         }
 
-        Asset asset = assetRepository.findByAssetName(assetName);
-        if (asset == null) {
-            throw new IllegalArgumentException("Asset not found");
+        if (assets.isEmpty()) {
+            throw new IllegalArgumentException("Assets cannot be empty");
         }
+
+        // Lấy Income Category đầu tiên từ danh sách Income Categories
+        IncomeCategory incomeCategory = incomeCategories.get(0);
+
+        // Lấy Asset đầu tiên từ danh sách Assets
+        Asset asset = assets.get(0);
 
         Income income = new Income();
         income.setUser(loggedInUser);
@@ -65,10 +72,9 @@ public class IncomeServiceImpl implements IncomeService {
 
         return incomeResponse;
     }
-
     @Override
-    public IncomeResponse getIncomeById(Long incomeId) {
-        Income income = incomeRepository.findById(incomeId)
+    public IncomeResponse getIncomeById(Long incomeId, User loggedInUser) {
+        Income income = incomeRepository.findByIdAndUser(incomeId, loggedInUser)
                 .orElseThrow(() -> new RuntimeException("Income not found"));
 
         IncomeResponse incomeResponse = new IncomeResponse();
@@ -81,26 +87,39 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public IncomeResponse updateIncome(Long incomeId, IncomeRequestModel incomeRequest) {
+    public IncomeResponse updateIncome(Long incomeId, IncomeRequestModel incomeRequest, User loggedInUser) {
         Income existingIncome = incomeRepository.findById(incomeId)
                 .orElseThrow(() -> new RuntimeException("Income not found"));
 
-        IncomeCategory incomeCategory = incomeCategoryRepository.findByIncomeCategoryName(incomeRequest.getIncomeCategoryName());
-        if (incomeCategory == null) {
-            throw new IllegalArgumentException("Income category not found");
+        List<IncomeCategory> incomeCategories = incomeCategoryService.getAllIncomeCategories();
+        List<Asset> assets = assetService.getAllAssets();
+
+        if (incomeCategories.isEmpty()) {
+            throw new IllegalArgumentException("Income categories cannot be empty");
         }
+
+        if (assets.isEmpty()) {
+            throw new IllegalArgumentException("Assets cannot be empty");
+        }
+
+        // Lấy Income Category đầu tiên từ danh sách Income Categories
+        IncomeCategory incomeCategory = incomeCategories.get(0);
+
+        // Lấy Asset đầu tiên từ danh sách Assets
+        Asset asset = assets.get(0);
 
         existingIncome.setIncomeCategory(incomeCategory);
         existingIncome.setDate(incomeRequest.getDate());
         existingIncome.setAmount(incomeRequest.getAmount());
         existingIncome.setDescription(incomeRequest.getDescription());
 
-        Asset asset = existingIncome.getAsset();
-        if (asset == null) {
-            asset = new Asset();
-            existingIncome.setAsset(asset);
+        if (existingIncome.getAsset() == null) {
+            Asset newAsset = new Asset();
+            newAsset.setAssetName(asset.getAssetName());
+            existingIncome.setAsset(newAsset);
+        } else {
+            existingIncome.getAsset().setAssetName(asset.getAssetName());
         }
-        asset.setAssetName(incomeRequest.getAssetName());
 
         Income updatedIncome = incomeRepository.save(existingIncome);
 
@@ -115,17 +134,22 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public void deleteIncome(Long incomeId) {
-        Income income = incomeRepository.findById(incomeId)
+    public void deleteIncome(Long incomeId, User loggedInUser) {
+        Income income = incomeRepository.findByIdAndUser(incomeId,loggedInUser)
                 .orElseThrow(() -> new RuntimeException("Income not found"));
 
         incomeRepository.delete(income);
     }
 
     @Override
-    public List<Income> getListIncome() {
-        return incomeRepository.findAll();
+    public List<Income> getListIncome(User loggedInUser) {
+        return incomeRepository.findAllByUser(loggedInUser);
     }
+
+
+
+
+
 
     @Override
     public BigDecimal getTotalAmountByDay(Date date, User loggedInUser) {
@@ -145,5 +169,30 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     public BigDecimal getTotalAmountByYear(int year, User loggedInUser) {
         return incomeRepository.getTotalAmountByYear(year,loggedInUser);
+    }
+
+    @Override
+    public BigDecimal getTotalAmountByDays(User loggedInUser) {
+        Date currentDate = new Date();
+        return incomeRepository.getTotalAmountByDay(currentDate, loggedInUser);
+    }
+
+    @Override
+    public BigDecimal getTotalAmountByWeeks(User loggedInUser) {
+        Date currentDate = new Date();
+        return incomeRepository.getTotalAmountByWeek(currentDate, loggedInUser);
+    }
+
+    @Override
+    public BigDecimal getTotalAmountByMonths(User loggedInUser) {
+        Date currentDate = new Date();
+        return incomeRepository.getTotalAmountByMonth(currentDate, loggedInUser);
+    }
+
+    @Override
+    public BigDecimal getTotalAmountByYears(User loggedInUser) {
+        Calendar calendar = Calendar.getInstance();
+        int currentYear = calendar.get(Calendar.YEAR);
+        return incomeRepository.getTotalAmountByYear(currentYear, loggedInUser);
     }
 }
