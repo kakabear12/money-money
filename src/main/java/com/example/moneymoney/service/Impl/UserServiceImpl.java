@@ -4,7 +4,9 @@ import com.example.moneymoney.entity.PasswordResetToken;
 import com.example.moneymoney.entity.RefreshToken;
 import com.example.moneymoney.entity.User;
 import com.example.moneymoney.entity.VerificationToken;
+import com.example.moneymoney.enums.AuthProvider;
 import com.example.moneymoney.enums.Role;
+import com.example.moneymoney.exception.UserNotFoundException;
 import com.example.moneymoney.jwt.*;
 import com.example.moneymoney.jwt.userprincipal.Principal;
 import com.example.moneymoney.model.requestmodel.LoginModel;
@@ -80,6 +82,7 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(userModel.getFirstName());
         user.setLastName(userModel.getLastName());
         user.setRole(Role.USER);
+        user.setProvider(AuthProvider.local);
         user.setPassword(passwordEncoder.encode(userModel.getPassword()));
         userRepository.save(user);
         return user;
@@ -120,7 +123,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).orElseThrow(()->
+                new UserNotFoundException(email, " not found"));
     }
 
     @Override

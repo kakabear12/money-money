@@ -2,6 +2,10 @@ package com.example.moneymoney.config;
 
 import com.example.moneymoney.jwt.JwtTokenFilter;
 import com.example.moneymoney.jwt.userprincipal.CustomUserDetailService;
+import com.example.moneymoney.oauth2.OAuth2AuthenticationFailureHandler;
+import com.example.moneymoney.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.example.moneymoney.repository.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.example.moneymoney.service.Impl.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +41,20 @@ public class WebSecurityConfig {
 
 
 
+            "/",
+            "/error",
+            "/favicon.ico",
+            "/**/*.png",
+            "/**/*.gif",
+            "/**/*.svg",
+            "/**/*.jpg",
+            "/**/*.html",
+            "/**/*.css",
+            "/**/*.js",
+            "/oauth2/**",
+
+
+
     };
 
 
@@ -53,9 +71,25 @@ public class WebSecurityConfig {
             "api/v1/money-money/users/incomes/**",
             "api/v1/money-money/users/profits/**"
     };
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
+    @Autowired
+    private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+
+    @Autowired
+    private HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     @Autowired
     private JwtTokenFilter jwtTokenFilter;
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -87,11 +121,28 @@ public class WebSecurityConfig {
                 .and()
                 .csrf()
                 .disable()
+                .formLogin()
+                .disable()
                 .authorizeHttpRequests()
                 .requestMatchers(UNAUTHORIZED_LIST_URLS).permitAll()
                 .and()
                 .authorizeHttpRequests().requestMatchers(AUTHORIZED_LIST_URLS)
-                .authenticated().and()
+                .authenticated()
+                .and()
+                .oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorize")
+                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                .and()
+                .redirectionEndpoint()
+                .baseUri("/oauth2/callback/*")
+                .and()
+                .userInfoEndpoint()
+                .userService(customOAuth2UserService)
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
+                .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()

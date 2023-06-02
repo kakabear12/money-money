@@ -1,8 +1,10 @@
 package com.example.moneymoney.entity;
 
 
+import com.example.moneymoney.enums.AuthProvider;
 import com.example.moneymoney.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 
@@ -32,13 +34,14 @@ public class User {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = false,length = 60)
+    @Column(name = "password", length = 60)
     private String password;
 
     private boolean enable =false;
 
 
     private Role role;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asset_id")
@@ -47,5 +50,10 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PremiumSubscription premiumSubscription;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
 
+
+    private String providerId;
 }

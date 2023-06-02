@@ -3,6 +3,7 @@ package com.example.moneymoney.jwt;
 
 
 import com.example.moneymoney.entity.RefreshToken;
+import com.example.moneymoney.exception.UserNotFoundException;
 import com.example.moneymoney.repository.RefreshTokenRepository;
 import com.example.moneymoney.repository.UserRepository;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -38,7 +39,8 @@ public class RefreshTokenProvider {
 
     public RefreshToken createRefreshToken(String email) {
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(userRepository.findByEmail(email));
+        refreshToken.setUser(userRepository.findByEmail(email).orElseThrow(()->
+                new UserNotFoundException(email, " not found")));
 
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
         refreshToken.setToken(UUID.randomUUID().toString());
