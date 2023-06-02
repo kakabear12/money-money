@@ -3,10 +3,11 @@ package com.example.moneymoney.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -17,12 +18,11 @@ public class ExpenseCategory {
     @Column(name = "expense_category_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @Column(name = "category_name")
     private String expenseCategoryName;
 
-
+    public ExpenseCategory(String expenseCategoryName) {
+        this.expenseCategoryName = expenseCategoryName;
+    }
 }

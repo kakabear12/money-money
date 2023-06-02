@@ -8,11 +8,12 @@ import lombok.*;
 
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Getter
+
 
 @Table(name = "user")
 public class User {
@@ -39,6 +40,12 @@ public class User {
 
     private Role role;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asset_id")
+    private Asset asset;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private PremiumSubscription premiumSubscription;
 
 
 }

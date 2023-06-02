@@ -12,10 +12,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginModel {
-    @Schema(description = "input email",example = "abc@gmail.com")
+    @Schema(description = "input email",example = "quangvanpham02022001@gmail.com")
     private String email;
 
-    @Schema(description = "input user password",example = "admin123456")
+    @Schema(description = "input user password",example = "123456")
     @Size(min = 6, max = 60)
     private String password;
 }

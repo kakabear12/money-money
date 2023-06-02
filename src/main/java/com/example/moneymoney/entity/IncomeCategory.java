@@ -2,13 +2,11 @@ package com.example.moneymoney.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -19,13 +17,12 @@ public class IncomeCategory {
     @Column(name = "income_category_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
     @Column(name = "income_category_name")
     private String incomeCategoryName;
 
 
+    public IncomeCategory(String incomeCategoryName) {
+        this.incomeCategoryName = incomeCategoryName;
+    }
 }
 

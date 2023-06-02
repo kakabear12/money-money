@@ -37,7 +37,7 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
         // Send Mail to user
 
         String url = event.getApplicationUrl()
-                + "/verifyRegistration?token="
+                + "/verification?token="
                 + token;
 
         //sendVerificationEmail()

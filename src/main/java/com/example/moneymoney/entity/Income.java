@@ -2,17 +2,15 @@ package com.example.moneymoney.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.sql.Timestamp;
+
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -30,10 +28,10 @@ public class Income {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "income_category_id")
-    private IncomeCategory IncomeCategory;
+    private IncomeCategory incomeCategory;
 
     @Column(name = "date")
-    private LocalDateTime date;
+    private Timestamp date;
 
     @Column(name = "amount")
     private BigDecimal amount;
@@ -42,8 +40,9 @@ public class Income {
     private String description;
 
 
-    @OneToMany(mappedBy = "income", cascade = CascadeType.ALL)
-    private List<Asset> asset;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asset_id")
+    private Asset asset;
 
 }
 

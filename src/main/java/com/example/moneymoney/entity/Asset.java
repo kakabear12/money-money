@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,9 +21,6 @@ public class Asset {
     @Column(name = "asset_id")
     private Long assetId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @Column(name = "asset_name", nullable = false)
     private String assetName;
@@ -38,13 +36,16 @@ public class Asset {
     private BigDecimal value;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "expense_id")
-    private Expense expense;
+
+    @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+    private List<Expense> expenses;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "income_id")
-    private Income income;
+
+    @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+    private List<Income> incomes;
+
+    @OneToMany(mappedBy = "asset", cascade = CascadeType.ALL)
+    private List<User> user;
 
 }

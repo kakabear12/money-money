@@ -32,8 +32,9 @@ public class WebSecurityConfig {
             "api/v1/money-money/accounts/verification",
             "api/v1/money-money/accounts/verification/resend",
             "api/v1/money-money/accounts/password-reset",
-            "api/v1/money-money/accounts/password-save"
-           // "api/v1/money-money/accounts/login"
+            "api/v1/money-money/accounts/password-save",
+
+
 
 
     };
@@ -47,9 +48,10 @@ public class WebSecurityConfig {
             "api/v1/money-money/users/password-change",
             "api/v1/money-money/users/validation",
             "api/v1/money-money/users/accessToken",
-            "api/v1/money-money/users/sessions"
-
-
+            "api/v1/money-money/users/sessions",
+            "api/v1/money-money/users/expenses/**",
+            "api/v1/money-money/users/incomes/**",
+            "api/v1/money-money/users/profits/**"
     };
 
     @Autowired

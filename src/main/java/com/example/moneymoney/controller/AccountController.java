@@ -120,7 +120,7 @@ public class AccountController {
 
     private String passwordResetTokenMail(User user, String applicationUrl, String token) {
         String url = applicationUrl
-                + "/savePassword?token="
+                + "/password-reset?token="
                 + token;
 
         //sendResetTokenMail()
@@ -161,7 +161,7 @@ public class AccountController {
 
     private void resendVerificationTokenMail(User user, String applicationUrl, VerificationToken verificationToken) {
         String url = applicationUrl
-                + "/verifyRegistration?token="
+                + "/verification/resend?token="
                 + verificationToken.getToken();
 
         //sendVerificationEmail()

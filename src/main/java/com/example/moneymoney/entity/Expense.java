@@ -5,13 +5,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
+import java.sql.Timestamp;
+
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -32,7 +31,7 @@ public class Expense {
     private ExpenseCategory expenseCategory;
 
     @Column(name = "date")
-    private LocalDateTime date;
+    private Timestamp date;
 
     @Column(name = "amount")
     private BigDecimal amount;
@@ -41,6 +40,9 @@ public class Expense {
     private String description;
 
 
-    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
-    private List<Asset> asset;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asset_id")
+    private Asset asset;
+
+
 }
