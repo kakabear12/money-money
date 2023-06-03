@@ -69,7 +69,8 @@ public class WebSecurityConfig {
             "api/v1/money-money/users/sessions",
             "api/v1/money-money/users/expenses/**",
             "api/v1/money-money/users/incomes/**",
-            "api/v1/money-money/users/profits/**"
+            "api/v1/money-money/users/profits/**",
+            "api/v1/money-money/users/interests/**"
     };
     @Autowired
     private CustomOAuth2UserService customOAuth2UserService;
