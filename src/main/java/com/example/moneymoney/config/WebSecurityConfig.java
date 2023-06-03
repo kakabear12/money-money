@@ -37,20 +37,9 @@ public class WebSecurityConfig {
             "api/v1/money-money/accounts/verification/resend",
             "api/v1/money-money/accounts/password-reset",
             "api/v1/money-money/accounts/password-save",
-
-
-
-
-//            "/",
-//            "/error",
-//            "/favicon.ico",
-//            "/**/*.png",
-//            "/**/*.gif",
-//            "/**/*.svg",
-//            "/**/*.jpg",
-//            "/**/*.html",
-//            "/**/*.css",
-//            "/**/*.js",
+            "/css/**",
+            "/js/**", "/img/**", "/lib/**",
+            "/favicon.ico",
             "/oauth2/**",
 
 
